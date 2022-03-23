@@ -2,6 +2,10 @@
 //Receives control commands to robot over Xbee using the Serial Transfer library 
 //Calculates motor speeds and sends to Sabertooth motor controller
 
+//As of 23 March 2022 (Redboard Turbo board definition vs 1.8.6), 
+//must update board definitions for Sparkfun Redboard Turbo, see:
+//https://github.com/sparkfun/Arduino_Boards/pull/96
+ 
 #include <SerialTransfer.h>
 #include <Sabertooth.h>
 #include "wiring_private.h" // pinPeripheral() function D2-TX, D3-RX
