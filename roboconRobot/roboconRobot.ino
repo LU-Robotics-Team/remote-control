@@ -24,7 +24,8 @@ struct CTRL {
 
 SerialTransfer ctrlTransfer;
 
-
+//Create Serial2 port on sercom2. D2->RX, D3->TX
+//See https://learn.sparkfun.com/tutorials/adding-more-sercom-ports-for-samd-boards
 Uart Serial2 (&sercom2, 3, 2, SERCOM_RX_PAD_1, UART_TX_PAD_2);
 void SERCOM2_Handler()
 {
@@ -35,13 +36,15 @@ Sabertooth FRONT_ST(128, Serial2);
 Sabertooth REAR_ST(129, Serial2);
 
 void setup() {
-  SerialUSB.begin(9600);
-  Serial1.begin(9600);
-  Serial2.begin(9600);
+  if (DEBUG == true) {
+    SerialUSB.begin(9600); //debugging
+  }
+  Serial1.begin(9600); //XBEE
+  Serial2.begin(9600); //Sabertooth
 
   pinPeripheral(2, PIO_SERCOM);
   pinPeripheral(3, PIO_SERCOM_ALT);
-  
+
   ctrlTransfer.begin(Serial1);
 }
 
@@ -61,7 +64,7 @@ void loop() {
     FRONT_ST.motor(RIGHT, frontRight);
     REAR_ST.motor(LEFT, backLeft);
     REAR_ST.motor(RIGHT, backRight);
-    
+
     if (DEBUG == true) {
       char dat1[32];
       sprintf(dat1, "Drive:%i,Strafe:%i,Turn:%i\r\n", ctrlData.driveSpeed, ctrlData.strafeSpeed, ctrlData.turnSpeed);
@@ -75,9 +78,11 @@ void loop() {
       SerialUSB.print("    ");
       SerialUSB.println(backRight);
     }
-  
+
   }
   else if (ctrlTransfer.status < 0) {
-    SerialUSB.print("Error");
+    if (DEBUG == true) {
+      SerialUSB.print("Error");
+    }
   }
 }
