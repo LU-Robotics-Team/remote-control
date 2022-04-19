@@ -32,8 +32,8 @@ void SERCOM2_Handler()
   Serial2.IrqHandler();
 }
 
-Sabertooth FRONT_ST(128, Serial2);
-Sabertooth REAR_ST(129, Serial2);
+Sabertooth ST(128, Serial2);
+
 
 void setup() {
   if (DEBUG == true) {
@@ -54,30 +54,21 @@ void loop() {
     int recSize = 0;
     recSize = ctrlTransfer.rxObj(ctrlData, recSize);
 
-    int denominator = max(abs(ctrlData.driveSpeed) + abs(ctrlData.strafeSpeed) + abs(ctrlData.turnSpeed), CTRL_MAX);
-    int frontLeft = (ctrlData.driveSpeed - ctrlData.strafeSpeed - ctrlData.turnSpeed) * CTRL_MAX / denominator;
-    int backLeft = (ctrlData.driveSpeed - ctrlData.strafeSpeed + ctrlData.turnSpeed) * CTRL_MAX / denominator;
-    int frontRight = (ctrlData.driveSpeed + ctrlData.strafeSpeed + ctrlData.turnSpeed) * CTRL_MAX / denominator;
-    int backRight = (ctrlData.driveSpeed + ctrlData.strafeSpeed - ctrlData.turnSpeed) * CTRL_MAX / denominator;
-
-    FRONT_ST.motor(LEFT, frontLeft);
-    FRONT_ST.motor(RIGHT, frontRight);
-    REAR_ST.motor(LEFT, backLeft);
-    REAR_ST.motor(RIGHT, backRight);
+    int denominator = max(abs(ctrlData.driveSpeed) + abs(ctrlData.strafeSpeed), CTRL_MAX);
+    int leftSpeed = (ctrlData.driveSpeed + ctrlData.strafeSpeed) * CTRL_MAX / denominator;
+    int rightSpeed = (ctrlData.driveSpeed - ctrlData.strafeSpeed) * CTRL_MAX / denominator;
+    
+    ST.motor(LEFT, leftSpeed);
+    ST.motor(RIGHT, rightSpeed);
 
     if (DEBUG == true) {
       char dat1[32];
       sprintf(dat1, "Drive:%i,Strafe:%i,Turn:%i\r\n", ctrlData.driveSpeed, ctrlData.strafeSpeed, ctrlData.turnSpeed);
-      SerialUSB.print(dat1);
-      SerialUSB.print(frontLeft);
+      SerialUSB.println(dat1);
+      SerialUSB.print(leftSpeed);
       SerialUSB.print("    ");
-      SerialUSB.println(frontRight);
-      SerialUSB.println("    ");
-      SerialUSB.println("    ");
-      SerialUSB.print(backLeft);
-      SerialUSB.print("    ");
-      SerialUSB.println(backRight);
-    }
+      SerialUSB.println(rightSpeed);
+     }
 
   }
   else if (ctrlTransfer.status < 0) {
