@@ -12,7 +12,7 @@
 
 const bool DEBUG = true;
 
-const int CTRL_MAX = 127;
+const int CTRL_MAX = 50;
 const int LEFT = 1;
 const int RIGHT = 2;
 
@@ -55,9 +55,9 @@ void loop() {
     recSize = ctrlTransfer.rxObj(ctrlData, recSize);
 
     int denominator = max(abs(ctrlData.driveSpeed) + abs(ctrlData.strafeSpeed) + abs(ctrlData.turnSpeed), CTRL_MAX);
-    int frontLeft = (ctrlData.driveSpeed + ctrlData.strafeSpeed + ctrlData.turnSpeed) * CTRL_MAX / denominator;
+    int frontLeft = (ctrlData.driveSpeed - ctrlData.strafeSpeed - ctrlData.turnSpeed) * CTRL_MAX / denominator;
     int backLeft = (ctrlData.driveSpeed - ctrlData.strafeSpeed + ctrlData.turnSpeed) * CTRL_MAX / denominator;
-    int frontRight = (ctrlData.driveSpeed - ctrlData.strafeSpeed - ctrlData.turnSpeed) * CTRL_MAX / denominator;
+    int frontRight = (ctrlData.driveSpeed + ctrlData.strafeSpeed + ctrlData.turnSpeed) * CTRL_MAX / denominator;
     int backRight = (ctrlData.driveSpeed + ctrlData.strafeSpeed - ctrlData.turnSpeed) * CTRL_MAX / denominator;
 
     FRONT_ST.motor(LEFT, frontLeft);
