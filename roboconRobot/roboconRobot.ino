@@ -12,14 +12,28 @@
 
 const bool DEBUG = true;
 
-const int CTRL_MAX = 50;
 const int LEFT = 1;
 const int RIGHT = 2;
+const int TURN_MIN = -60;
+const int TURN_MAX = 60; //Maximum turn speed; 0 to 127
+const int DRIVE_MIN = -90; //Minimum control speed; 0 to 127
+const int DRIVE_MAX = 90;
+const int STICK_MIN = 0; //Minimum value of joystick potentiometer
+const int STICK_MAX = 1024;
+const int DBY_MIN = 524; // Deadband lower bound of Y joystick
+const int DBY_MAX = 536;
+const int DBX_MIN = 514; //Deadband lower bound of X joystick
+const int DBX_MAX = 526;
 
+int driveSpeed;
+int turnSpeed;
+
+//Main struct to hold data to send over XBee
 struct CTRL {
-  int driveSpeed;
-  int strafeSpeed;
-  int turnSpeed;
+  int stickX;
+  int stickY;
+  int trigL;
+  int trigR;
 } ctrlData;
 
 SerialTransfer ctrlTransfer;
@@ -54,16 +68,34 @@ void loop() {
     int recSize = 0;
     recSize = ctrlTransfer.rxObj(ctrlData, recSize);
 
-    int denominator = max(abs(ctrlData.driveSpeed) + abs(ctrlData.strafeSpeed), CTRL_MAX);
-    int leftSpeed = (ctrlData.driveSpeed + ctrlData.strafeSpeed) * CTRL_MAX / denominator;
-    int rightSpeed = (ctrlData.driveSpeed - ctrlData.strafeSpeed) * CTRL_MAX / denominator;
+//Read value of joystick in Y direction, if inside deadband read 0
+  if (ctrlData.stickY > DBY_MIN && ctrlData.stickY < DBY_MAX) {
+    driveSpeed = 0;
+  }
+  
+  else {
+    driveSpeed = map(ctrlData.stickY, STICK_MIN, STICK_MAX, DRIVE_MIN, DRIVE_MAX);
+  }
+
+  //Read value of joystick in X direction, if inside deadband read 0
+  if (ctrlData.stickX > DBX_MIN && ctrlData.stickX < DBX_MAX) {
+    turnSpeed = 0;
+  }
+
+  else {
+    turnSpeed = map(ctrlData.stickX, STICK_MIN, STICK_MAX, TURN_MAX, TURN_MIN); //Make left negative, right positive
+  }
+
+    int denominator = max(abs(driveSpeed) + abs(turnSpeed), DRIVE_MAX);
+    int leftSpeed = (driveSpeed + turnSpeed) * DRIVE_MAX / denominator;
+    int rightSpeed = (driveSpeed - turnSpeed) * DRIVE_MAX / denominator;
     
     ST.motor(LEFT, leftSpeed);
     ST.motor(RIGHT, rightSpeed);
 
     if (DEBUG == true) {
       char dat1[32];
-      sprintf(dat1, "Drive:%i,Strafe:%i,Turn:%i\r\n", ctrlData.driveSpeed, ctrlData.strafeSpeed, ctrlData.turnSpeed);
+      sprintf(dat1, "Drive:%i,Turn:%i\r\n",driveSpeed, turnSpeed);
       SerialUSB.println(dat1);
       SerialUSB.print(leftSpeed);
       SerialUSB.print("    ");
