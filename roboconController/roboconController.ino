@@ -25,6 +25,8 @@ struct CTRL {
   int padR;
   int padL;
   int padD;
+  int trigL;
+  int trigR;
 } ctrlData;
 
 SerialTransfer ctrlTransfer;
@@ -40,6 +42,8 @@ void setup()
   pinMode(PAD_RIGHT, INPUT_PULLUP);
   pinMode(PAD_LEFT, INPUT_PULLUP);
   pinMode(PAD_DOWN, INPUT_PULLUP);
+  pinMode(LEFT_TRIGPIN, INPUT_PULLUP);
+  pinMode(RIGHT_TRIGPIN, INPUT_PULLUP);
 }
 
 void loop()
@@ -50,6 +54,8 @@ void loop()
   ctrlData.padR = digitalRead(PAD_RIGHT);
   ctrlData.padL = digitalRead(PAD_LEFT);
   ctrlData.padD = digitalRead(PAD_DOWN);
+  ctrlData.trigL = digitalRead(LEFT_TRIGPIN);
+  ctrlData.trigR = digitalRead(RIGHT_TRIGPIN);
   
 
   //Send all data in ctrlData struct every sendRate milliseconds
